@@ -2,7 +2,7 @@
 
 Location-based platform connecting customers with verified nearby technicians (plumbing, electrical, AC servicing) with transparent pricing, appointment booking, and a trust-based rating system.
 
-See [IMPLEMENTATION _PLAN.md](./IMPLEMENTATION%20_PLAN.md) for the product plan and architecture rationale.
+See [IMPLEMENTATION \_PLAN.md](./IMPLEMENTATION%20_PLAN.md) for the product plan and architecture rationale.
 
 ## Stack
 
@@ -49,6 +49,7 @@ docker compose up --build
 ## Running without Docker
 
 ### Backend
+
 ```bash
 cd backend
 python -m venv .venv
@@ -60,6 +61,7 @@ uvicorn app.main:app --reload
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -72,3 +74,5 @@ npm run dev
 - All input validated at the API boundary via Pydantic schemas — never trust client-submitted price/quote values without server-side checks.
 - CORS is locked to `FRONTEND_ORIGIN` from env config, not wildcard.
 - Secrets (`SECRET_KEY`, DB creds, OAuth client secret) live only in `.env` files, never committed (`.gitignore`'d).
+
+6/8/26-App modules- and integration to be done
