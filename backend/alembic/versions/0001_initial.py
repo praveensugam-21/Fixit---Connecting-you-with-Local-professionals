@@ -81,7 +81,7 @@ def upgrade() -> None:
         sa.UniqueConstraint("user_id", name="uq_technician_profiles_user_id"),
     )
     op.execute(
-        "CREATE INDEX idx_technician_profiles_location ON technician_profiles USING GIST (location)"
+        "CREATE INDEX IF NOT EXISTS idx_technician_profiles_location ON technician_profiles USING GIST (location)"
     )
 
     op.create_table(
@@ -137,7 +137,7 @@ def upgrade() -> None:
         sa.Column("final_price", sa.Float(), nullable=True),
         sa.Column("cancellation_reason", sa.Text(), nullable=True),
     )
-    op.execute("CREATE INDEX idx_bookings_location ON bookings USING GIST (location)")
+    op.execute("CREATE INDEX IF NOT EXISTS idx_bookings_location ON bookings USING GIST (location)")
     op.create_index("ix_bookings_customer_id", "bookings", ["customer_id"])
     op.create_index("ix_bookings_technician_id", "bookings", ["technician_id"])
 
