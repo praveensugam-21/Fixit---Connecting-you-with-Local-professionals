@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum as PyEnum
 
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -10,7 +10,7 @@ from app.core.database import Base
 from app.models.base import TimestampMixin, UUIDPKMixin
 
 
-class PaymentStatus(StrEnum):
+class PaymentStatus(str, PyEnum):
     PENDING = "pending"
     AUTHORIZED = "authorized"
     CAPTURED = "captured"
