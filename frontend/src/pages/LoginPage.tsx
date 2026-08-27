@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -67,6 +68,8 @@ export function LoginPage() {
           {isSubmitting ? 'Logging in...' : 'Log in'}
         </button>
       </form>
+
+      <GoogleSignInButton onError={setError} />
 
       <p className="mt-4 text-sm text-slate-600">
         No account?{' '}
