@@ -52,3 +52,7 @@ class TechnicianNearby(BaseModel):
     service_radius_km: float
     distance_km: float
     location: Location
+    # Populated only when the search is filtered by a category (for quote comparison).
+    call_out_fee: float | None = None
+    hourly_rate: float | None = None
+    currency: str | None = None
