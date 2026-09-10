@@ -1,15 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { bookingsApi } from '../api/bookings'
+import { paymentsApi, type Payment } from '../api/payments'
 import { BookingStatusBadge } from '../components/common/BookingStatusBadge'
+import { PayButton } from '../components/payment/PayButton'
 import { useAuth } from '../context/AuthContext'
 import type { Booking, Message } from '../types'
+
+const PAYABLE_STATUSES = ['quote_approved', 'in_progress', 'completed']
 
 export function BookingDetailPage() {
   const { bookingId } = useParams<{ bookingId: string }>()
   const { user } = useAuth()
   const [booking, setBooking] = useState<Booking | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
+  const [payment, setPayment] = useState<Payment | null>(null)
   const [messageBody, setMessageBody] = useState('')
   const [quotePrice, setQuotePrice] = useState('')
   const [reviewRating, setReviewRating] = useState(5)
@@ -20,9 +25,12 @@ export function BookingDetailPage() {
     if (!bookingId) return
     bookingsApi.getById(bookingId).then(setBooking)
     bookingsApi.listMessages(bookingId).then(setMessages)
+    if (user?.role === 'customer') {
+      paymentsApi.get(bookingId).then(setPayment).catch(() => setPayment(null))
+    }
   }
 
-  useEffect(reload, [bookingId])
+  useEffect(reload, [bookingId, user?.role])
 
   if (!booking || !user) {
     return <div className="p-8 text-center text-slate-500">Loading...</div>
@@ -77,6 +85,23 @@ export function BookingDetailPage() {
         {booking.final_price != null && (
           <p className="text-sm font-medium text-slate-900">Final price: {booking.final_price}</p>
         )}
+
+        {isCustomer && (payment?.status === 'captured' ? (
+          <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
+            ✓ Paid ₹{payment.amount}
+          </p>
+        ) : (
+          PAYABLE_STATUSES.includes(booking.status) &&
+          (booking.final_price ?? booking.quoted_price) != null && (
+            <div className="mt-3">
+              <PayButton
+                bookingId={booking.id}
+                amount={(booking.final_price ?? booking.quoted_price) as number}
+                onPaid={reload}
+              />
+            </div>
+          )
+        ))}
 
         {actionError && <p className="mt-3 text-sm text-red-600">{actionError}</p>}
 

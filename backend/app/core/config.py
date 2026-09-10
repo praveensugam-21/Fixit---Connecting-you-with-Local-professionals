@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     google_client_id: str | None = None
     google_client_secret: str | None = None
 
+    # Razorpay (test mode)
+    razorpay_key_id: str | None = None
+    razorpay_key_secret: str | None = None
+
     # Uploads
     upload_dir: str = "uploads"
     max_upload_mb: int = 10
