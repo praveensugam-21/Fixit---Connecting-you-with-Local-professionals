@@ -24,6 +24,17 @@ def get_by_user_id(db: Session, user_id: uuid.UUID) -> TechnicianProfile | None:
     return db.scalar(select(TechnicianProfile).where(TechnicianProfile.user_id == user_id))
 
 
+def list_by_status(db: Session, status: VerificationStatus) -> list[TechnicianProfile]:
+    return list(
+        db.scalars(
+            select(TechnicianProfile)
+            .options(joinedload(TechnicianProfile.user), joinedload(TechnicianProfile.rate_cards))
+            .where(TechnicianProfile.verification_status == status)
+            .order_by(TechnicianProfile.created_at.desc())
+        ).unique()
+    )
+
+
 def create_profile(db: Session, *, user_id: uuid.UUID, data: TechnicianProfileCreate) -> TechnicianProfile:
     profile = TechnicianProfile(
         user_id=user_id,

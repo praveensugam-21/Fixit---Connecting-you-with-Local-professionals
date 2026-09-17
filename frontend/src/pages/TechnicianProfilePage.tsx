@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { techniciansApi } from '../api/technicians'
 import { RatingStars } from '../components/common/RatingStars'
+import { useAuth } from '../context/AuthContext'
 import type { Review, TechnicianProfile } from '../types'
 
 export function TechnicianProfilePage() {
   const { technicianId } = useParams<{ technicianId: string }>()
+  const { user } = useAuth()
   const [profile, setProfile] = useState<TechnicianProfile | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +43,18 @@ export function TechnicianProfilePage() {
           </div>
         </div>
 
+        {!user && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm">
+            <span className="text-brand-800">🔒 Log in to see full name, contact details and to book.</span>
+            <Link
+              to="/login"
+              className="rounded-lg bg-brand-600 px-3 py-1.5 font-semibold text-white hover:bg-brand-700"
+            >
+              Log in
+            </Link>
+          </div>
+        )}
+
         {profile.bio && <p className="mt-4 text-sm text-slate-600">{profile.bio}</p>}
         {profile.years_experience != null && (
           <p className="mt-1 text-sm text-slate-500">{profile.years_experience} years experience</p>
@@ -61,10 +75,10 @@ export function TechnicianProfilePage() {
                 {rc.currency} {rc.call_out_fee} call-out + {rc.currency} {rc.hourly_rate}/hr
               </span>
               <Link
-                to={`/book/${profile.id}?category=${rc.category_id}`}
+                to={user ? `/book/${profile.id}?category=${rc.category_id}` : '/login'}
                 className="rounded-md bg-brand-600 px-3 py-1 font-medium text-white hover:bg-brand-700"
               >
-                Book
+                {user ? 'Book' : 'Log in to book'}
               </Link>
             </li>
           ))}

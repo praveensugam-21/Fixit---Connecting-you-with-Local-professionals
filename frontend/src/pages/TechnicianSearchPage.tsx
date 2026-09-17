@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { categoriesApi } from '../api/categories'
 import { techniciansApi } from '../api/technicians'
 import { TechnicianMap } from '../components/map/TechnicianMap'
 import { RatingStars } from '../components/common/RatingStars'
+import { useAuth } from '../context/AuthContext'
 import { useGeolocation } from '../hooks/useGeolocation'
 import type { ServiceCategory, TechnicianNearby } from '../types'
 
 export function TechnicianSearchPage() {
   const { location, error: geoError, isLoading: geoLoading } = useGeolocation()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const [categories, setCategories] = useState<ServiceCategory[]>([])
@@ -65,7 +67,21 @@ export function TechnicianSearchPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-5">
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      {!user && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm">
+          <span className="text-brand-800">
+            🔒 You're browsing as a guest — technician names and contact details are hidden.
+          </span>
+          <Link
+            to="/login"
+            className="rounded-lg bg-brand-600 px-3 py-1.5 font-semibold text-white hover:bg-brand-700"
+          >
+            Log in to see details & book
+          </Link>
+        </div>
+      )}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
       <div className="lg:col-span-2">
         <div className="mb-4 flex flex-wrap gap-3">
           <select
@@ -209,6 +225,7 @@ export function TechnicianSearchPage() {
           technicians={technicians}
           onSelect={(id) => navigate(`/technicians/${id}`)}
         />
+      </div>
       </div>
     </div>
   )

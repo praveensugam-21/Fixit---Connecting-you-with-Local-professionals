@@ -1,5 +1,12 @@
 import { apiClient } from './client'
-import type { Location, RateCard, Review, TechnicianNearby, TechnicianProfile } from '../types'
+import type {
+  Location,
+  RateCard,
+  Review,
+  TechnicianNearby,
+  TechnicianProfile,
+  VerificationStatus,
+} from '../types'
 
 export interface TechnicianProfileInput {
   bio?: string
@@ -48,6 +55,21 @@ export const techniciansApi = {
   },
   async reviews(technicianId: string): Promise<Review[]> {
     const { data } = await apiClient.get<Review[]>(`/technicians/${technicianId}/reviews`)
+    return data
+  },
+  async listPending(): Promise<TechnicianProfile[]> {
+    const { data } = await apiClient.get<TechnicianProfile[]>('/technicians/pending')
+    return data
+  },
+  async setVerification(
+    technicianId: string,
+    verification_status: VerificationStatus,
+  ): Promise<TechnicianProfile> {
+    const { data } = await apiClient.patch<TechnicianProfile>(
+      `/technicians/${technicianId}/verification`,
+      null,
+      { params: { verification_status } },
+    )
     return data
   },
 }
