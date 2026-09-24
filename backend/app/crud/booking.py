@@ -1,11 +1,19 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.booking import Booking, BookingStatus
 from app.schemas.booking import BookingCreate
 from app.services.geo import make_point
+
+ACTIVE_STATUSES = (
+    BookingStatus.REQUESTED,
+    BookingStatus.ACCEPTED,
+    BookingStatus.QUOTED,
+    BookingStatus.QUOTE_APPROVED,
+    BookingStatus.IN_PROGRESS,
+)
 
 
 def get(db: Session, booking_id: uuid.UUID) -> Booking | None:
@@ -42,6 +50,26 @@ def list_for_technician(db: Session, technician_id: uuid.UUID) -> list[Booking]:
             select(Booking).where(Booking.technician_id == technician_id).order_by(Booking.created_at.desc())
         )
     )
+
+
+def earnings_summary(db: Session, technician_id: uuid.UUID) -> tuple[float, int, int]:
+    """Returns (total_earned, completed_jobs, active_jobs) for a technician.
+
+    Earnings are the sum of final price across completed bookings.
+    """
+    total, completed = db.execute(
+        select(func.coalesce(func.sum(Booking.final_price), 0.0), func.count(Booking.id)).where(
+            Booking.technician_id == technician_id,
+            Booking.status == BookingStatus.COMPLETED,
+        )
+    ).one()
+    active = db.scalar(
+        select(func.count(Booking.id)).where(
+            Booking.technician_id == technician_id,
+            Booking.status.in_(ACTIVE_STATUSES),
+        )
+    )
+    return float(total or 0.0), int(completed or 0), int(active or 0)
 
 
 def save(db: Session, booking: Booking) -> Booking:

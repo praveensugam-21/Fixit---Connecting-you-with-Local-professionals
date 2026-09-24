@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_optional, require_roles
 from app.core.database import get_db
+from app.crud import booking as booking_crud
 from app.crud import review as review_crud
 from app.crud import service_category as category_crud
 from app.crud import technician as technician_crud
@@ -13,6 +14,7 @@ from app.models.user import User, UserRole
 from app.schemas.review import ReviewRead
 from app.schemas.service_category import RateCardCreate, RateCardRead
 from app.schemas.technician import (
+    EarningsSummary,
     Location,
     TechnicianNearby,
     TechnicianProfileCreate,
@@ -72,6 +74,24 @@ def read_my_profile(
     if profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Technician profile not found")
     return _to_read(technician_crud.get_by_id(db, profile.id))
+
+
+@router.get("/me/earnings", response_model=EarningsSummary)
+def my_earnings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.TECHNICIAN)),
+) -> EarningsSummary:
+    profile = technician_crud.get_by_user_id(db, current_user.id)
+    if profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Technician profile not found")
+    total, completed, active = booking_crud.earnings_summary(db, profile.id)
+    return EarningsSummary(
+        total_earned=total,
+        completed_jobs=completed,
+        active_jobs=active,
+        avg_rating=profile.avg_rating,
+        rating_count=profile.rating_count,
+    )
 
 
 @router.patch("/me", response_model=TechnicianProfileRead)

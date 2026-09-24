@@ -4,13 +4,14 @@ import { bookingsApi } from '../api/bookings'
 import { categoriesApi } from '../api/categories'
 import { techniciansApi } from '../api/technicians'
 import { BookingStatusBadge } from '../components/common/BookingStatusBadge'
-import type { Booking, ServiceCategory, TechnicianProfile } from '../types'
+import type { Booking, EarningsSummary, ServiceCategory, TechnicianProfile } from '../types'
 
 export function TechnicianDashboardPage() {
   const [profile, setProfile] = useState<TechnicianProfile | null>(null)
   const [profileMissing, setProfileMissing] = useState(false)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
+  const [earnings, setEarnings] = useState<EarningsSummary | null>(null)
 
   const [categoryId, setCategoryId] = useState('')
   const [callOutFee, setCallOutFee] = useState('')
@@ -24,6 +25,7 @@ export function TechnicianDashboardPage() {
       .catch(() => setProfileMissing(true))
     bookingsApi.listMine().then(setBookings)
     categoriesApi.list().then(setCategories)
+    techniciansApi.myEarnings().then(setEarnings).catch(() => setEarnings(null))
   }
 
   useEffect(reload, [])
@@ -66,7 +68,29 @@ export function TechnicianDashboardPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="text-2xl font-semibold text-slate-900">Technician dashboard</h1>
 
-      <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4 text-sm">
+      {earnings && (
+        <section className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            [`${earnings.currency} ${earnings.total_earned.toLocaleString()}`, 'Total earned'],
+            [String(earnings.completed_jobs), 'Completed jobs'],
+            [String(earnings.active_jobs), 'Active jobs'],
+            [
+              earnings.rating_count > 0 ? `${earnings.avg_rating.toFixed(1)} ★` : '—',
+              `Rating (${earnings.rating_count})`,
+            ],
+          ].map(([value, label]) => (
+            <div
+              key={label}
+              className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-card"
+            >
+              <p className="text-xl font-extrabold text-brand-700">{value}</p>
+              <p className="mt-1 text-xs text-slate-500">{label}</p>
+            </div>
+          ))}
+        </section>
+      )}
+
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4 text-sm">
         <p>
           Verification status: <span className="font-medium">{profile.verification_status}</span>
         </p>

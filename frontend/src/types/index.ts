@@ -114,3 +114,12 @@ export interface Message {
   body: string
   created_at: string
 }
+
+export interface EarningsSummary {
+  total_earned: number
+  completed_jobs: number
+  active_jobs: number
+  avg_rating: number
+  rating_count: number
+  currency: string
+}
