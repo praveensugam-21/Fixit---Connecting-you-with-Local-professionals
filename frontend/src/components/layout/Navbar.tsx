@@ -11,14 +11,17 @@ export function Navbar() {
   }
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="text-lg font-semibold text-brand-700">
+        <Link to="/" className="flex items-center gap-2 text-lg font-extrabold text-brand-700">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 text-white">
+            🔧
+          </span>
           FixIt
         </Link>
 
         <div className="flex items-center gap-4 text-sm">
-          <Link to="/search" className="text-slate-600 hover:text-brand-600">
+          <Link to="/search" className="font-medium text-slate-600 transition hover:text-brand-600">
             Find a technician
           </Link>
 
@@ -26,27 +29,27 @@ export function Navbar() {
             <>
               <Link
                 to={user.role === 'technician' ? '/technician/dashboard' : '/dashboard'}
-                className="text-slate-600 hover:text-brand-600"
+                className="font-medium text-slate-600 transition hover:text-brand-600"
               >
                 Dashboard
               </Link>
-              <span className="text-slate-400">{user.full_name}</span>
+              <span className="hidden text-slate-400 sm:inline">{user.full_name}</span>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-md bg-slate-100 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-200"
+                className="rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-700 transition hover:bg-slate-200"
               >
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-slate-600 hover:text-brand-600">
+              <Link to="/login" className="font-medium text-slate-600 transition hover:text-brand-600">
                 Log in
               </Link>
               <Link
                 to="/signup"
-                className="rounded-md bg-brand-600 px-3 py-1.5 font-medium text-white hover:bg-brand-700"
+                className="rounded-lg bg-brand-600 px-4 py-1.5 font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-700"
               >
                 Sign up
               </Link>

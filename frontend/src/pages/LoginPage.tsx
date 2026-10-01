@@ -26,8 +26,10 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
-      <h1 className="text-2xl font-semibold text-slate-900">Log in</h1>
+    <div className="mx-auto mt-14 max-w-sm animate-fade-up px-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-card">
+      <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+      <p className="mt-1 text-sm text-slate-500">Log in to manage your bookings.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
@@ -40,7 +42,7 @@ export function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 focus:border-brand-500 focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none"
           />
         </div>
 
@@ -54,7 +56,7 @@ export function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 focus:border-brand-500 focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none"
           />
         </div>
 
@@ -63,7 +65,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-md bg-brand-600 py-2 font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-brand-600 py-2.5 font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-50"
         >
           {isSubmitting ? 'Logging in...' : 'Log in'}
         </button>
@@ -71,12 +73,13 @@ export function LoginPage() {
 
       <GoogleSignInButton onError={setError} />
 
-      <p className="mt-4 text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-slate-600">
         No account?{' '}
-        <Link to="/signup" className="font-medium text-brand-600">
+        <Link to="/signup" className="font-semibold text-brand-600 hover:text-brand-700">
           Sign up
         </Link>
       </p>
+      </div>
     </div>
   )
 }
