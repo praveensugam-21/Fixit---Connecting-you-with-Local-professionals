@@ -12,7 +12,7 @@ from app.crud import technician as technician_crud
 from app.models.technician import TechnicianProfile, VerificationStatus
 from app.models.user import User, UserRole
 from app.schemas.review import ReviewRead
-from app.schemas.service_category import RateCardCreate, RateCardRead
+from app.schemas.service_category import RateCardCreate, RateCardRead, RateCardUpdate
 from app.schemas.technician import (
     EarningsSummary,
     Location,
@@ -128,6 +128,40 @@ def add_rate_card(
         currency=data.currency,
     )
     return RateCardRead.model_validate(rate_card)
+
+
+def _get_owned_rate_card(db: Session, rate_card_id: uuid.UUID, user: User):
+    profile = technician_crud.get_by_user_id(db, user.id)
+    if profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Technician profile not found")
+    rate_card = technician_crud.get_rate_card_by_id(db, rate_card_id)
+    if rate_card is None or rate_card.technician_id != profile.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rate card not found")
+    return rate_card
+
+
+@router.patch("/me/rate-cards/{rate_card_id}", response_model=RateCardRead)
+def update_rate_card(
+    rate_card_id: uuid.UUID,
+    data: RateCardUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.TECHNICIAN)),
+) -> RateCardRead:
+    rate_card = _get_owned_rate_card(db, rate_card_id, current_user)
+    updated = technician_crud.update_rate_card(
+        db, rate_card, call_out_fee=data.call_out_fee, hourly_rate=data.hourly_rate
+    )
+    return RateCardRead.model_validate(updated)
+
+
+@router.delete("/me/rate-cards/{rate_card_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_rate_card(
+    rate_card_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.TECHNICIAN)),
+) -> None:
+    rate_card = _get_owned_rate_card(db, rate_card_id, current_user)
+    technician_crud.delete_rate_card(db, rate_card)
 
 
 @router.get("/nearby", response_model=list[TechnicianNearby])

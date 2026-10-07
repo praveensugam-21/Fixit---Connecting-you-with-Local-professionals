@@ -23,6 +23,11 @@ class RateCardCreate(RateCardBase):
     pass
 
 
+class RateCardUpdate(BaseModel):
+    call_out_fee: float | None = Field(default=None, ge=0)
+    hourly_rate: float | None = Field(default=None, ge=0)
+
+
 class RateCardRead(RateCardBase):
     model_config = ConfigDict(from_attributes=True)
 

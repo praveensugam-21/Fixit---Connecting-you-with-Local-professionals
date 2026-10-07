@@ -75,6 +75,27 @@ def add_rate_card(db: Session, *, technician_id: uuid.UUID, category_id: uuid.UU
     return rate_card
 
 
+def get_rate_card_by_id(db: Session, rate_card_id: uuid.UUID) -> RateCard | None:
+    return db.get(RateCard, rate_card_id)
+
+
+def update_rate_card(
+    db: Session, rate_card: RateCard, *, call_out_fee: float | None, hourly_rate: float | None
+) -> RateCard:
+    if call_out_fee is not None:
+        rate_card.call_out_fee = call_out_fee
+    if hourly_rate is not None:
+        rate_card.hourly_rate = hourly_rate
+    db.commit()
+    db.refresh(rate_card)
+    return rate_card
+
+
+def delete_rate_card(db: Session, rate_card: RateCard) -> None:
+    db.delete(rate_card)
+    db.commit()
+
+
 def find_nearby(
     db: Session,
     *,

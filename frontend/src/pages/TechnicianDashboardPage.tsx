@@ -18,6 +18,10 @@ export function TechnicianDashboardPage() {
   const [hourlyRate, setHourlyRate] = useState('')
   const [rateCardError, setRateCardError] = useState<string | null>(null)
 
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editCallOut, setEditCallOut] = useState('')
+  const [editHourly, setEditHourly] = useState('')
+
   function reload() {
     techniciansApi
       .getMyProfile()
@@ -46,6 +50,37 @@ export function TechnicianDashboardPage() {
       reload()
     } catch {
       setRateCardError('Could not add that rate card.')
+    }
+  }
+
+  function startEdit(id: string, callOut: number, hourly: number) {
+    setEditingId(id)
+    setEditCallOut(String(callOut))
+    setEditHourly(String(hourly))
+    setRateCardError(null)
+  }
+
+  async function handleSaveEdit(id: string) {
+    setRateCardError(null)
+    try {
+      await techniciansApi.updateRateCard(id, {
+        call_out_fee: Number(editCallOut),
+        hourly_rate: Number(editHourly),
+      })
+      setEditingId(null)
+      reload()
+    } catch {
+      setRateCardError('Could not update that rate card.')
+    }
+  }
+
+  async function handleDeleteRateCard(id: string) {
+    setRateCardError(null)
+    try {
+      await techniciansApi.deleteRateCard(id)
+      reload()
+    } catch {
+      setRateCardError('Could not delete that rate card.')
     }
   }
 
@@ -104,12 +139,70 @@ export function TechnicianDashboardPage() {
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-slate-900">Your rate cards</h2>
         <ul className="mt-2 space-y-2">
+          {profile.rate_cards.length === 0 && (
+            <p className="text-sm text-slate-500">No rate cards yet. Add one below.</p>
+          )}
           {profile.rate_cards.map((rc) => (
-            <li key={rc.id} className="flex justify-between rounded-md border border-slate-100 px-3 py-2 text-sm">
-              <span>{rc.category.name}</span>
-              <span className="text-slate-600">
-                {rc.currency} {rc.call_out_fee} + {rc.currency} {rc.hourly_rate}/hr
-              </span>
+            <li
+              key={rc.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-100 px-3 py-2 text-sm"
+            >
+              <span className="font-medium text-slate-800">{rc.category.name}</span>
+
+              {editingId === rc.id ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    value={editCallOut}
+                    onChange={(e) => setEditCallOut(e.target.value)}
+                    placeholder="Call-out"
+                    className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    value={editHourly}
+                    onChange={(e) => setEditHourly(e.target.value)}
+                    placeholder="Hourly"
+                    className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSaveEdit(rc.id)}
+                    className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(null)}
+                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="text-slate-600">
+                    {rc.currency} {rc.call_out_fee} + {rc.currency} {rc.hourly_rate}/hr
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => startEdit(rc.id, rc.call_out_fee, rc.hourly_rate)}
+                    className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRateCard(rc.id)}
+                    className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>

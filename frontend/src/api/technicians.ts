@@ -58,6 +58,19 @@ export const techniciansApi = {
     const { data } = await apiClient.post<RateCard>('/technicians/me/rate-cards', payload)
     return data
   },
+  async updateRateCard(
+    rateCardId: string,
+    payload: { call_out_fee?: number; hourly_rate?: number },
+  ): Promise<RateCard> {
+    const { data } = await apiClient.patch<RateCard>(
+      `/technicians/me/rate-cards/${rateCardId}`,
+      payload,
+    )
+    return data
+  },
+  async deleteRateCard(rateCardId: string): Promise<void> {
+    await apiClient.delete(`/technicians/me/rate-cards/${rateCardId}`)
+  },
   async reviews(technicianId: string): Promise<Review[]> {
     const { data } = await apiClient.get<Review[]>(`/technicians/${technicianId}/reviews`)
     return data
