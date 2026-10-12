@@ -79,6 +79,26 @@ export function BookingDetailPage() {
 
         <p className="mt-4 text-sm text-slate-700">{booking.description}</p>
         <p className="mt-1 text-xs text-slate-500">{booking.address_label}</p>
+
+        {(() => {
+          const party = isCustomer ? booking.technician : booking.customer
+          const label = isCustomer ? 'Technician' : 'Customer'
+          if (!party) return null
+          return (
+            <div className="mt-4 rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm">
+              <p className="text-xs font-medium uppercase text-slate-400">{label}</p>
+              <p className="mt-0.5 font-medium text-slate-900">{party.name}</p>
+              {party.contact_unlocked && party.phone ? (
+                <p className="mt-1 text-slate-700">📞 {party.phone}</p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-500">
+                  🔒 Contact number unlocks after payment
+                </p>
+              )}
+            </div>
+          )
+        })()}
+
         {booking.quoted_price != null && (
           <p className="mt-2 text-sm font-medium text-slate-900">Quoted price: {booking.quoted_price}</p>
         )}

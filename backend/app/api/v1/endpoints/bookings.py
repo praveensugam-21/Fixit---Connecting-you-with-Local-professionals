@@ -7,12 +7,15 @@ from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.crud import booking as booking_crud
 from app.crud import message as message_crud
+from app.crud import payment as payment_crud
 from app.crud import review as review_crud
 from app.crud import service_category as category_crud
 from app.crud import technician as technician_crud
+from app.crud import user as user_crud
 from app.models.booking import Booking, BookingStatus
+from app.models.payment import PaymentStatus
 from app.models.user import User, UserRole
-from app.schemas.booking import BookingCreate, BookingQuote, BookingRead, BookingStatusUpdate
+from app.schemas.booking import BookingCreate, BookingParty, BookingQuote, BookingRead, BookingStatusUpdate
 from app.schemas.message import MessageCreate, MessageRead
 from app.schemas.review import ReviewCreate, ReviewRead
 from app.services.booking_service import InvalidTransition, TransitionNotAllowedForRole, assert_valid_transition
@@ -41,6 +44,30 @@ def _to_read(booking: Booking) -> BookingRead:
         created_at=booking.created_at,
         updated_at=booking.updated_at,
     )
+
+
+def _with_parties(db: Session, booking: Booking, read: BookingRead) -> BookingRead:
+    """Attach customer/technician info. Phone is revealed only after payment."""
+    payment = payment_crud.get_by_booking(db, booking.id)
+    unlocked = payment is not None and payment.status == PaymentStatus.CAPTURED
+
+    customer = user_crud.get_by_id(db, booking.customer_id)
+    tech_profile = technician_crud.get_by_id(db, booking.technician_id)
+    tech_user = tech_profile.user if tech_profile else None
+
+    if customer is not None:
+        read.customer = BookingParty(
+            name=customer.full_name,
+            phone=customer.phone if unlocked else None,
+            contact_unlocked=unlocked,
+        )
+    if tech_user is not None:
+        read.technician = BookingParty(
+            name=tech_user.full_name,
+            phone=tech_user.phone if unlocked else None,
+            contact_unlocked=unlocked,
+        )
+    return read
 
 
 def _get_owned_booking(db: Session, booking_id: uuid.UUID, current_user: User) -> Booking:
@@ -99,7 +126,7 @@ def read_booking(
     current_user: User = Depends(get_current_user),
 ) -> BookingRead:
     booking = _get_owned_booking(db, booking_id, current_user)
-    return _to_read(booking)
+    return _with_parties(db, booking, _to_read(booking))
 
 
 @router.post("/{booking_id}/quote", response_model=BookingRead)

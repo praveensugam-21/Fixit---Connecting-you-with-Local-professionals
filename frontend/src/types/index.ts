@@ -79,6 +79,12 @@ export type BookingStatus =
   | 'cancelled'
   | 'disputed'
 
+export interface BookingParty {
+  name: string
+  phone: string | null
+  contact_unlocked: boolean
+}
+
 export interface Booking {
   id: string
   customer_id: string
@@ -95,6 +101,8 @@ export interface Booking {
   cancellation_reason: string | null
   created_at: string
   updated_at: string
+  customer?: BookingParty | null
+  technician?: BookingParty | null
 }
 
 export interface Review {

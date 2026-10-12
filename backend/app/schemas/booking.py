@@ -26,6 +26,13 @@ class BookingStatusUpdate(BaseModel):
     cancellation_reason: str | None = Field(default=None, max_length=1000)
 
 
+class BookingParty(BaseModel):
+    name: str
+    # Contact details are revealed only after the booking is paid.
+    phone: str | None = None
+    contact_unlocked: bool = False
+
+
 class BookingRead(BaseModel):
     id: uuid.UUID
     customer_id: uuid.UUID
@@ -42,3 +49,5 @@ class BookingRead(BaseModel):
     cancellation_reason: str | None
     created_at: datetime
     updated_at: datetime
+    customer: BookingParty | None = None
+    technician: BookingParty | None = None
