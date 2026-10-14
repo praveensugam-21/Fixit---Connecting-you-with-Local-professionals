@@ -43,6 +43,15 @@ class TechnicianProfileRead(TechnicianProfileBase):
     rate_cards: list[RateCardRead] = []
 
 
+class EarningsSummary(BaseModel):
+    total_earned: float
+    completed_jobs: int
+    active_jobs: int
+    avg_rating: float
+    rating_count: int
+    currency: str = "INR"
+
+
 class TechnicianNearby(BaseModel):
     id: uuid.UUID
     full_name: str

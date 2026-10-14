@@ -1,5 +1,6 @@
 import { apiClient } from './client'
 import type {
+  EarningsSummary,
   Location,
   RateCard,
   Review,
@@ -39,6 +40,10 @@ export const techniciansApi = {
   },
   async getMyProfile(): Promise<TechnicianProfile> {
     const { data } = await apiClient.get<TechnicianProfile>('/technicians/me')
+    return data
+  },
+  async myEarnings(): Promise<EarningsSummary> {
+    const { data } = await apiClient.get<EarningsSummary>('/technicians/me/earnings')
     return data
   },
   async createMyProfile(payload: TechnicianProfileInput): Promise<TechnicianProfile> {
