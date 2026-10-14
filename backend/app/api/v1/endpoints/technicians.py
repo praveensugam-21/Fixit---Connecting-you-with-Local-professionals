@@ -118,6 +118,11 @@ def nearby(
         latlng = point_to_latlng(profile.location)
         if latlng is None:
             continue
+        rate = (
+            technician_crud.get_rate_card(db, profile.id, category_id)
+            if category_id is not None
+            else None
+        )
         nearby_list.append(
             TechnicianNearby(
                 id=profile.id,
@@ -128,6 +133,9 @@ def nearby(
                 service_radius_km=profile.service_radius_km,
                 distance_km=round(distance_km, 2),
                 location=Location(lat=latlng[0], lng=latlng[1]),
+                call_out_fee=rate.call_out_fee if rate else None,
+                hourly_rate=rate.hourly_rate if rate else None,
+                currency=rate.currency if rate else None,
             )
         )
     return nearby_list

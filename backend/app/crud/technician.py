@@ -95,6 +95,14 @@ def find_nearby(
     return [(profile, distance / 1000.0) for profile, distance in rows]
 
 
+def get_rate_card(db: Session, technician_id: uuid.UUID, category_id: uuid.UUID) -> RateCard | None:
+    return db.scalar(
+        select(RateCard).where(
+            RateCard.technician_id == technician_id, RateCard.category_id == category_id
+        )
+    )
+
+
 def recompute_rating(db: Session, technician_id: uuid.UUID) -> None:
     from sqlalchemy import func
 

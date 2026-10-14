@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum as PyEnum
 
 from geoalchemy2 import Geography
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text
@@ -11,7 +11,7 @@ from app.core.database import Base
 from app.models.base import TimestampMixin, UUIDPKMixin
 
 
-class BookingStatus(StrEnum):
+class BookingStatus(str, PyEnum):
     REQUESTED = "requested"
     ACCEPTED = "accepted"
     QUOTED = "quoted"

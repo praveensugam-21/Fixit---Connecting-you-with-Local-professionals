@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from enum import StrEnum
+from enum import Enum as PyEnum
 from typing import Any
 
 from jose import JWTError, jwt
@@ -10,7 +10,7 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-class TokenType(StrEnum):
+class TokenType(str, PyEnum):
     ACCESS = "access"
     REFRESH = "refresh"
 
