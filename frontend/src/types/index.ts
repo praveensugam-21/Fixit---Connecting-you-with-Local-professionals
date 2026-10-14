@@ -64,6 +64,9 @@ export interface TechnicianNearby {
   service_radius_km: number
   distance_km: number
   location: Location
+  call_out_fee: number | null
+  hourly_rate: number | null
+  currency: string | null
 }
 
 export type BookingStatus =
