@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton'
 import type { UserRole } from '../types'
 
 export function SignupPage() {
@@ -121,6 +122,8 @@ export function SignupPage() {
           {isSubmitting ? 'Creating account...' : 'Sign up'}
         </button>
       </form>
+
+      <GoogleSignInButton onError={setError} />
 
       <p className="mt-4 text-sm text-slate-600">
         Already have an account?{' '}
