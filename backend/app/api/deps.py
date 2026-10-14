@@ -42,6 +42,29 @@ def get_current_user(
     return user
 
 
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Like get_current_user but returns None instead of raising when unauthenticated.
+
+    Used by public endpoints that reveal richer data to logged-in viewers.
+    """
+    if token is None:
+        return None
+    payload = decode_token(token)
+    if payload is None or payload.get("type") != TokenType.ACCESS.value:
+        return None
+    try:
+        user_id = uuid.UUID(payload["sub"])
+    except (KeyError, ValueError):
+        return None
+    user = user_crud.get_by_id(db, user_id)
+    if user is None or not user.is_active:
+        return None
+    return user
+
+
 def require_roles(*roles: UserRole) -> Callable[[User], User]:
     def _checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.role not in roles and current_user.role != UserRole.ADMIN:

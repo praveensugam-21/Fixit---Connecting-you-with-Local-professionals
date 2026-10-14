@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import require_roles
+from app.api.deps import get_current_user_optional, require_roles
 from app.core.database import get_db
 from app.crud import review as review_crud
 from app.crud import service_category as category_crud
@@ -24,16 +24,25 @@ from app.services.geo import point_to_latlng
 router = APIRouter(prefix="/technicians", tags=["technicians"])
 
 
-def _to_read(profile: TechnicianProfile) -> TechnicianProfileRead:
+def _mask_name(full_name: str) -> str:
+    """Show only the first name and last initial to anonymous viewers."""
+    parts = full_name.split()
+    if len(parts) > 1:
+        return f"{parts[0]} {parts[-1][0]}."
+    return parts[0] if parts else "Verified Pro"
+
+
+def _to_read(profile: TechnicianProfile, *, authed: bool = True) -> TechnicianProfileRead:
     latlng = point_to_latlng(profile.location)
     return TechnicianProfileRead(
         id=profile.id,
         user_id=profile.user_id,
-        full_name=profile.user.full_name,
+        full_name=profile.user.full_name if authed else _mask_name(profile.user.full_name),
         bio=profile.bio,
         years_experience=profile.years_experience,
         service_radius_km=profile.service_radius_km,
-        address_label=profile.address_label,
+        # Exact address is contact information — hidden from anonymous viewers.
+        address_label=profile.address_label if authed else None,
         verification_status=profile.verification_status,
         avg_rating=profile.avg_rating,
         rating_count=profile.rating_count,
@@ -109,7 +118,9 @@ def nearby(
     category_id: uuid.UUID | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
 ) -> list[TechnicianNearby]:
+    authed = current_user is not None
     results = technician_crud.find_nearby(
         db, lat=lat, lng=lng, radius_km=radius_km, category_id=category_id, limit=limit
     )
@@ -126,7 +137,7 @@ def nearby(
         nearby_list.append(
             TechnicianNearby(
                 id=profile.id,
-                full_name=profile.user.full_name,
+                full_name=profile.user.full_name if authed else _mask_name(profile.user.full_name),
                 avg_rating=profile.avg_rating,
                 rating_count=profile.rating_count,
                 verification_status=profile.verification_status,
@@ -141,12 +152,25 @@ def nearby(
     return nearby_list
 
 
+@router.get("/pending", response_model=list[TechnicianProfileRead])
+def list_pending_technicians(
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_roles(UserRole.ADMIN)),
+) -> list[TechnicianProfileRead]:
+    profiles = technician_crud.list_by_status(db, VerificationStatus.PENDING)
+    return [_to_read(p) for p in profiles]
+
+
 @router.get("/{technician_id}", response_model=TechnicianProfileRead)
-def read_technician(technician_id: uuid.UUID, db: Session = Depends(get_db)) -> TechnicianProfileRead:
+def read_technician(
+    technician_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_current_user_optional),
+) -> TechnicianProfileRead:
     profile = technician_crud.get_by_id(db, technician_id)
     if profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Technician not found")
-    return _to_read(profile)
+    return _to_read(profile, authed=current_user is not None)
 
 
 @router.get("/{technician_id}/reviews", response_model=list[ReviewRead])

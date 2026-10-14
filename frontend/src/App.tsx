@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Navbar } from './components/layout/Navbar'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
+import { AdminDashboardPage } from './pages/AdminDashboardPage'
 import { BookingCreatePage } from './pages/BookingCreatePage'
 import { BookingDetailPage } from './pages/BookingDetailPage'
 import { CustomerDashboardPage } from './pages/CustomerDashboardPage'
@@ -33,6 +34,10 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['technician', 'admin']} />}>
             <Route path="/technician/onboarding" element={<TechnicianOnboardingPage />} />
             <Route path="/technician/dashboard" element={<TechnicianDashboardPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
           </Route>
 
           <Route element={<ProtectedRoute />}>
