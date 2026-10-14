@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import Enum as PyEnum
 
 from sqlalchemy import Boolean, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -7,7 +7,7 @@ from app.core.database import Base
 from app.models.base import TimestampMixin, UUIDPKMixin
 
 
-class UserRole(StrEnum):
+class UserRole(str, PyEnum):
     CUSTOMER = "customer"
     TECHNICIAN = "technician"
     ADMIN = "admin"

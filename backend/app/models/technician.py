@@ -1,5 +1,5 @@
 import uuid
-from enum import StrEnum
+from enum import Enum as PyEnum
 
 from geoalchemy2 import Geography
 from sqlalchemy import Enum, Float, ForeignKey, Integer, String, Text
@@ -10,7 +10,7 @@ from app.core.database import Base
 from app.models.base import TimestampMixin, UUIDPKMixin
 
 
-class VerificationStatus(StrEnum):
+class VerificationStatus(str, PyEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
